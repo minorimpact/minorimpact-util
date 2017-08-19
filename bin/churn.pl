@@ -125,7 +125,7 @@ sub test {
         eval $default_object_type . '::churn({ user => $user, verbose => $options->{verbose} });';
     };
     print "$@\n" if ($@ && $options->{verbose});
-    MinorImpact::log('notify', $@) if ($@);
+    MinorImpact::log('notice', $@) if ($@);
 
     my $test_end_time = [gettimeofday];
     #print "test_time=" . tv_interval($test_start_time, $test_end_time) . "\n";
