@@ -4,6 +4,14 @@ use strict;
 use Time::HiRes qw(tv_interval gettimeofday);
 use Getopt::Long "HelpMessage";
 
+use MinorImpact;
+use MinorImpact::Object;
+use MinorImpact::Object::Search;
+use MinorImpact::Test;
+use MinorImpact::User;
+use MinorImpact::Util;
+use Uravo::InfluxDB;
+
 my $options = {
                 config => $ENV{MINORIMPACT_CONFIG},
                 help => sub { HelpMessage(); },
@@ -21,20 +29,11 @@ GetOptions( $options,
         ) || HelpMessage();
 
 
-use MinorImpact;
-use MinorImpact::Object;
-use MinorImpact::Object::Search;
-use MinorImpact::Test;
-use MinorImpact::Util;
-
-
-use Uravo::InfluxDB;
-
-use lib "../lib";
-
 die "config file $options->{config} does not exist" unless (-f $options->{config});
 my $test_count = $options->{test_count} || $options->{count} || int(rand(10)) + 1;
 my $MAX_CHILD_COUNT = 3;
+my $TARGET_TEST_USER_COUNT = 1000;
+
 my $verbose = $options->{verbose};
 my $start_time = [gettimeofday];
 
@@ -105,18 +104,27 @@ sub test {
     my $lib_directory = $MINORIMPACT->{conf}{default}{lib_directory};
     push(@INC, $lib_directory) if ($lib_directory);
 
-    my $user = MinorImpact::Test::randomUser();
-    my $user_type = int(rand(4));
-    if ($user_type == 0 || !$user) { # new user
-        my $password = time() . $$ . int(rand(100)) ;
-        my $username = "test_user_note_$password";
+    my $user;
+    my $user_type = int(rand(6));
+    my $test_user_count = MinorImpact::User::count({ name => 'test_user_%' });
+    if ($test_user_count > $TARGET_TEST_USER_COUNT) {
+        $user_type++;
+    } if ($test_user_count < $TARGET_TEST_USER_COUNT) {
+        $user_type--;
+    }
+
+    if ($user_type <= 1 || !$test_user_count) { # new user
+        my $password = time() . $$ . int(rand(1000));
+        my $username = "test_user_$password";
         print "$$ adding user $username\n" if ($options->{verbose});
         MinorImpact::User::addUser({ username => $username, password => $password });
         $user = MinorImpact::user({ username => $username, password => $password }) || die "Can't retrieve user $username\n";;
-    } elsif ($user_type == 1) { # angry user
+    } elsif ($user_type <= 3) { # angry user
+        $user = MinorImpact::Test::randomUser();
         print "$$ deleting user " . $user->name() . "(" . $user->id() . ")\n" if ($options->{verbose});
         return $user->delete();
     } else {
+        $user = MinorImpact::Test::randomUser();
         print "$$ logging in as " . $user->name() . "(" . $user->id() . ")\n" if ($options->{verbose});
     }
 
