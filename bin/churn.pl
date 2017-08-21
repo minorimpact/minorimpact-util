@@ -58,7 +58,7 @@ while (wait() > 0) {}
 my $end_time = [gettimeofday];
 
 my $MINORIMPACT = new MinorImpact({ no_log => ($options->{verbose}?0:1), config_file => $options->{config} });
-my $application_id = $MINORIMPACT->{conf}{default}{application_id};
+my $application_id = $MINORIMPACT->{conf}{default}{application_id} || die "No application id set.";
 my $default_type_id = MinorImpact::Object::getType() || die "Unable to get a default type.";
 
 my $DB = $MinorImpact::SELF->{DB};
@@ -85,13 +85,13 @@ print "unique_tag_count = $unique_tag_count\n" if ($options->{verbose});
 Uravo::InfluxDB::influxdb({ db => $application_id, metric => "unique_tag_count", value => $unique_tag_count }) if ($application_id);
 if ($user_count) {
     print "objects/user = " . ($object_count/$user_count) . "\n"  if ($options->{verbose});
-    Uravo::InfluxDB::influxdb({ db => $application_id, metric => "notes_per_user", value => ($object_count/$user_count) }) if ($application_id);
+    Uravo::InfluxDB::influxdb({ db => $application_id, metric => "objects_per_user", value => ($object_count/$user_count) }) if ($application_id);
     print "tags/user = " . ($tag_count/$user_count) . "\n"  if ($options->{verbose});
     Uravo::InfluxDB::influxdb({ db => $application_id, metric => "tags_per_user", value => ($tag_count/$user_count) }) if ($application_id);
 }
 if ($object_count) {
     print "tags/object = " . ($tag_count/$object_count) . "\n"  if ($options->{verbose});
-    Uravo::InfluxDB::influxdb({ db => $application_id, metric => "tags_per_note", value => ($tag_count/$object_count) }) if ($application_id);
+    Uravo::InfluxDB::influxdb({ db => $application_id, metric => "tags_per_object", value => ($tag_count/$object_count) }) if ($application_id);
 }
 
 sub test {
