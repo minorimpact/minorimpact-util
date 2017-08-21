@@ -64,7 +64,7 @@ sub main {
     my $user = $MINORIMPACT->user({username=>$username, password=>$password}) || die "Unable to validate user";
     die $user->name() . " does not have admin priviledges" unless ($user->isAdmin());
     my $DB = $MINORIMPACT->db();
-    MinorImpact::checkDatabaseTables($DB);
+    MinorImpact::dbConfig($DB);
 
 
     # Just change the action from list to info if someone specifies a type - ou
@@ -120,9 +120,12 @@ sub main {
 
     } elsif ($options{action} eq 'bootstrap') {
         my $module = $options{module};
+        if ($module !=~/\.pm$/ && $MINORIMPACT->{conf}{default}{lib_directory}) {
+            $module = $MINORIMPACT->{conf}{default}{lib_directory} . "/$module.pm";
+        }
         my ($short_name) = $module =~/\/([^.\/]+)\.pm$/;
-        print "$short_name\n";
         die "invalid module: $module" unless ($module && $short_name && -f $module);
+        print "Running ${short_name}::dbConfig() from $module\n";
         eval {
             require $module;
             $short_name->dbConfig();
@@ -189,13 +192,18 @@ type.pl [options]
                         Actions:
                             addtype     Create a new TYPE.
                             addfield    Add a new field FIELDNAME to TYPE. See "Field options" below.
+                            bootstrap   Run MODULE::dbConfig().  Useful for adding the first object
+                                        to an application.
                             delfield    Delete field FIELDNAME from TYPE.
                             info        Show information about TYPE.
                             list        show all types.
       --addfield        Equivilant to --action=addfield.
-  -c, --config=FILE     Read connection information from FILE.
+  -c, --config=CONFIG   Read connection information from CONFIG.
   -f, --force           Never request conformation.
   -h, --help            Usage information.
+  -m, --module=MODULE   With the bootstrap ACTION, will run MODULE::dbConfig().  If MODULE
+                        is not a ".pm" filename, we'll try looking in the $lib_directory option
+                        defined in CONFIG for MODULE.pm.
   -p, --password=PASSWORD
                         Connect with PASSWORD.  Will prompt if not specified.
       --system          TYPE will considered a 'system' object.
