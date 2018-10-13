@@ -1,13 +1,12 @@
 #!/usr/bin/perl
 
-
 use MinorImpact;
 use MinorImpact::Object;
 use MinorImpact::Object::Search;
 use MinorImpact::Util;
 
-use lib "../lib";
-use note;
+#use lib "../lib";
+#use note;
 
 my $MINORIMPACT = new MinorImpact();
 
