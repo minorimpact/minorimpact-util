@@ -58,7 +58,7 @@ else
 fi
 
 cd $BUILD_DIR
-tar -c -v -z --exclude='.git' --exclude='build' -f ${PACKAGE_NAME}.tar.gz $PACKAGE_NAME/
+tar -c -v -z --exclude='README.md' --exclude='.git' --exclude='build' -f ${PACKAGE_NAME}.tar.gz $PACKAGE_NAME/
 cp ${PACKAGE_NAME}.tar.gz $SOURCE_DIR/
 
 rm -rf $BASE_DIR
