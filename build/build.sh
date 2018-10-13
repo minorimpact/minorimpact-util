@@ -17,7 +17,7 @@ do
 done
 
 BASENAME=$(basename $0)
-USAGE="Usage: $(basename $0) [-h?]"
+USAGE="Usage: $(basename $0) [-nh?]"
 _DIRNAME=$(dirname $0)
 if [ -d $_DIRNAME ]; then
     cd $_DIRNAME
@@ -27,10 +27,16 @@ fi
 NAME=`/bin/grep Name $DIRNAME/*.spec | /bin/cut -d' ' -f2`;
 VERSION=`/bin/grep Version $DIRNAME/$NAME.spec | /bin/cut -d' ' -f2`;
 RELEASE=`/bin/grep Release $DIRNAME/$NAME.spec | /bin/cut -d' ' -f2`;
-if [ "$VERSION" = '' -o "$RELEASE" = '' ];
+if [ "$NAME" = '' -o "$VERSION" = '' -o "$RELEASE" = '' ];
 then
-    echo "Cannot determine version or release number."
+    echo "Cannot determine name or version or release number."
     exit 1
+fi
+
+_PREFIX=`echo $NAME | cut -d'-' -f1`
+if [ "$_PREFIX" = "perl" ];
+then
+    PERLLIBNAME=`echo $NAME | cut -d'-' -f2`
 fi
 
 PACKAGE_NAME="$NAME-$VERSION"
@@ -43,14 +49,20 @@ SOURCE_DIR="$HOME/rpmbuild/SOURCES"
 [ -d $ROOT_DIR ] && rm -rf $ROOT_DIR
 mkdir -p $ROOT_DIR
 
-cp -a $DIRNAME/../* $ROOT_DIR
+if [ "$PERLLIBNAME" = '' ];
+then
+    cp -a $DIRNAME/../* $ROOT_DIR
+else
+    cp -a $DIRNAME/../$PERLLIBNAME $ROOT_DIR
+    cp -a $DIRNAME/../$PERLLIBNAME.pm $ROOT_DIR
+fi
 
 cd $BUILD_DIR
 tar -c -v -z --exclude='.git' --exclude='build' -f ${PACKAGE_NAME}.tar.gz $PACKAGE_NAME/
 cp ${PACKAGE_NAME}.tar.gz $SOURCE_DIR/
 
 rm -rf $BASE_DIR
-rpmbuild -ba $DIRNAME/$NAME.spec
+rpmbuild -ba -sign $DIRNAME/$NAME.spec 
 
 if [ "$REPO" != "norepo" ];
 then
