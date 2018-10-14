@@ -37,6 +37,8 @@ sub main {
         $ENV{USER} = $options->{username};
     }
 
+    my $login = MinorImpact::user();
+
     unless ($del_user) {
         HelpMessage({message=>"You must specify a login name for the user to delete.", exitval=>0});
     }

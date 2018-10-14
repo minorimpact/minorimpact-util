@@ -38,6 +38,8 @@ sub main {
         $ENV{USER} = $options->{username};
     }
 
+    my $login = MinorImpact::user();
+
     unless ($new_user) {
         HelpMessage({message=>"You must specify a login name for the new user.", exitval=>0});
     }
