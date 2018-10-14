@@ -80,13 +80,11 @@ sub main {
     }
 }
 
-=pod
-
-=name1 NAME
+=head1 NAME
 
 test_user.pl - MinorImpact utility script for manipulating test users in a MinorImpact application.
 
-=name1 SYNOPSIS
+=head1 SYNOPSIS
 
 test_user.pl [options]
 
@@ -100,6 +98,7 @@ test_user.pl [options]
       --count=COUNT     Operate on COUNT number of test users.
   -f, --force           Never request conformation.
   -h, --help            Usage information.
+  -u, --user=USER       Connect to MinorImpct as USER.  default: $ENV{USER}
   -v, --verbose         Verbose output.
 
 =cut
