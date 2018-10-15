@@ -2,7 +2,7 @@
 
 set -x
 
-LIVE_DIR="/usr/local";
+LIVE_DIR="/opt/minorimpact";
 RELEASE_DIR="/data/repo";
 
 while getopts "hn?" cliopts
