@@ -29,23 +29,6 @@ sub main {
     my $package = shift  @ARGV;
 
     MinorImpact::debug($options->{debug});
-    if (0 && $package =~/^MinorImpact::/){
-        #my $main = "MinorImpact.pm";
-        #my $p = $package;
-        #$p =~s/::/\//g;
-        #$p = "$p.pm" unless ($p =~/\.pm$/);
-        #(my $path = $INC{$main}) =~ s#/\Q$main\E$##g;
-        #print "$path\n";
-
-        # If the user is just trying to bootstrap a stock
-        #   MinorImpact object, for some reseon, just 
-        #   'use' it and hope for the the best.
-        eval "use $package;";
-        die $@ if ($@);
-        eval $package ."::dbConfig()";
-        die $@ if ($@);
-        exit;
-    } 
     
     if ($package =~/\.pm$/) {
         # User passed us a filename, so lets add the file's location to
