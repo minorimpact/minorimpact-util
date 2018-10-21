@@ -16,6 +16,7 @@ GetOptions( $options,
             "admin|a=s",
             "config|c=s",
             "debug|d",
+            "email|e=s",
             "help|?|h",
             "password|p",
             "username|u=s",
@@ -51,7 +52,7 @@ sub main {
 
     if (defined($options->{admin})) {
         print "Updating admin rights.\n";
-        $user->update({admin => isTrue($options->{admin})});
+        die "Can't update user\n" unless ($user->update({admin => isTrue($options->{admin})}));
     }
     if (defined($options->{email}) && $options->{email}) {
         print "Setting email\n";
@@ -72,14 +73,43 @@ edit_user.pl - MinorImpact utility to update a a user
 
 edit_user.pl [options] EDIT_USER
 
-  Options:
-  -a, --admin yes/no    Turn admin rights on or off for EDIT_USER.
-  -c, --config FILE     Read connection information from FILE.
-  -d, --debug           Turn debugging output on.
-  -h, --help            Usage information.
-  -p, --password        Prompt for a new password for EDIT_USER.
-  -u, --username USER   Run as USER instead of $ENV{USER}.
-  -v, --verbose         Verbose output.
+=head2 Options
+
+=over
+
+=item -a, --admin yes/no
+
+Turn admin rights on or off for EDIT_USER.
+
+=item -c, --config FILE
+
+Read connection information from FILE.
+
+=item -d, --debug
+
+Turn debugging output on.
+
+=item -e. --email EMAIL
+
+Set USER's email address top EMAIL.
+
+=item -h, --help 
+
+Usage information.
+
+=item -p, --password
+
+Prompt for a new password for EDIT_USER.
+
+=item -u, --username USER
+
+Run as USER instead of $ENV{USER}.
+
+=item -v, --verbose
+
+Verbose output.
+
+=back
 
 User updates can only be performed by THE USER THEMSELVES or AN ADMIN USER.  If 
 you're not running this to make changes to your own user, and you're not
