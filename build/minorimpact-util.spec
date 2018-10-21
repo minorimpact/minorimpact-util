@@ -1,6 +1,6 @@
 Summary: MinorImpact scripts.
 Name: minorimpact-util
-Version: 0.0.4
+Version: 0.0.5
 Release: 01
 Epoch: 0
 License: GPL
