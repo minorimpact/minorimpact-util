@@ -52,7 +52,7 @@ sub main {
 
     my $password = MinorImpact::CLI::passwordPrompt({confirm => 1, username=>$new_user});
 
-    my $user = MinorImpact::User::addUser({username=>$new_user, password => $password, admin=>$options->{admin}});
+    my $user = MinorImpact::User::add({username=>$new_user, password => $password, admin=>$options->{admin}});
     if ($user && $user->name() eq $new_user) {
         print "'$new_user' created.\n";
         exit(0);
