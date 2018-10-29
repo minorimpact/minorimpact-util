@@ -16,7 +16,7 @@ GetOptions( $options,
             "config|c=s",
             "help|?|h",
             "username|u=s",
-            "verbose",
+            "verbose|v",
         ) || HelpMessage();
 
 eval { main(); };

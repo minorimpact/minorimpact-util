@@ -75,7 +75,7 @@ GetOptions(
     "debug|d",
     "force|f",
     "help|?|h",
-    "input_file|o=s",
+    "input_file|i=s",
     "username|u=s",
     "verbose|v",
 ) || HelpMessage();
