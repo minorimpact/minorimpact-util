@@ -24,15 +24,15 @@ GetOptions( $options,
             "config|c=s", 
             "debug|d",
             "help|?|h",
-            "id|i=i",
+            "id|i=s",
             "type_id|type|t=s",
             "username|u=s",
-            "verbose",
+            "verbose|v",
         ) || HelpMessage();
 
 eval { main(); };
 if ($@) {
-    HelpMessage({message=>$@, exitval=>1});
+    die "$@";
 }
 
 
@@ -43,6 +43,7 @@ sub main {
         $ENV{USER} = $options->{username};
     }
     my $user = MinorImpact::user();
+    die "Invalid user\n" unless ($user);
 
     if ($options->{id} && (!$options->{action} || $options->{action} eq 'list')) {
         # We can't 'list' a single object, so just change it to 'info' if ID is defined.
@@ -52,13 +53,13 @@ sub main {
     if ($options->{action} eq 'list') {
         my $params;
         $params->{query}{user_id} = $user->id();
-        $params->{query}{object_type_id} = $options->{type_id};
+        $params->{query}{object_type_id} = MinorImpact::Object::typeID($options->{type_id});
         my @objects = MinorImpact::Object::Search::search($params);
         foreach my $object (@objects) {
             printf("%s (%d)\n", $object->name(), $object->id());
         }
     } elsif ($options->{id} && $options->{action} eq 'info') {
-        my $object = new MinorImpact::Object($options->{id}, {user_id=>$user->id()}) || die "Can't retrieve object.";
+        my $object = new MinorImpact::Object($options->{id}) || die "Can't retrieve object.";
         print $object->name() . " (" . $object->id() . ")\n";
         print "-------\n";
         print "  type: " . $object->typeName() . "\n";
@@ -67,7 +68,13 @@ sub main {
         my $fields = $object->fields();
         foreach my $field_name (sort keys %$fields) {
             my $field = $fields->{$field_name};
-            print "    $field_name: " . join(",", $field->value()) . "\n";
+            foreach my $value ($field->value()) {
+                if (ref($value)) {
+                    print "    $field_name: " . $value->name() . "\n";
+                } else {
+                    print "    $field_name: " . $value . "\n";
+                }
+            }
         }
 
         print "\n";

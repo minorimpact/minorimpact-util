@@ -7,7 +7,7 @@ restore.pl - Restore a MinorImpact application.
 
 =head1 SYNOPSIS
 
-restore.pl [options]
+restore.pl -i <file> [options]
 
 =head2 Options
 
@@ -37,12 +37,6 @@ Read data from FILE.
 
 Required.
 
-=item -u, --username=USER
-
-Connect as USER.  
-
-Default: $ENV{USER}
-
 =item -v, --verbose 
 
 Verbose output.
@@ -64,6 +58,8 @@ use MinorImpact::User;
 
 my $MINORIMPACT;
 
+my $postponed = {};
+
 my $options = {
     help => sub { HelpMessage(); },
 };
@@ -76,7 +72,6 @@ GetOptions(
     "force|f",
     "help|?|h",
     "input_file|i=s",
-    "username|u=s",
     "verbose|v",
 ) || HelpMessage();
 
@@ -88,9 +83,8 @@ if ($@) {
 sub main {
     MinorImpact::debug($options->{debug});
     $MINORIMPACT = new MinorImpact({config_file=>$options->{config}});
-    if ($options->{username}) {
-        $ENV{USER} = $options->{username};
-    }
+    $ENV{USER} = 'admin';
+
     my $current_user = MinorImpact::user( { force => 1, admin =>1 });
 
     unless ($options->{force}) {
@@ -128,8 +122,10 @@ sub main {
             print "Deleting object " . $object->name() . "\n" if ($options->{verbose});
             $object->delete();
         }
-        print "Deleting user " . $user->name() . "\n" if ($options->{verbose});
-        $user->delete();
+        unless ($user->name() eq 'admin') {
+            print "Deleting user " . $user->name() . "\n" if ($options->{verbose});
+            $user->delete();
+        }
     }
 
     print "Searching for types\n" if ($options->{verbose});
@@ -139,19 +135,67 @@ sub main {
         $type->delete();
     }
 
+    MinorImpact::clearCache();
+    MinorImpact::dbConfig();
+
     foreach my $type ( @{$data->{types}}) {
-        print "Adding type " . $type->{name} . "\n" if ($options->{verbose});
+        print "Adding typea '" . $type->{name} . "'\n" if ($options->{verbose});
         my $new_type = MinorImpact::Object::Type::add($type);
     }
 
     foreach my $user ( @{$data->{users}}) {
-        print "Adding user " . $user->{name} . "\n" if ($options->{verbose});
-        my $new_user = MinorImpact::User::add($user) || die "Couldn't add $user->{name}\n";
-        foreach my $object (@{$user->{objects}}) {
-            print "Adding object " . $object->{name} . "\n" if ($options->{verbose});
-            my $new_object = new MinorImpact::Object($object);
+        my $new_user;
+        if ($user->{name} eq 'admin') {
+            $new_user = $current_user;
+        } else {
+            print "Adding user '" . $user->{name} . "'\n" if ($options->{verbose});
+            $new_user = MinorImpact::User::add($user) || die "Couldn't add '$user->{name}'\n";
         }
+        foreach my $object_data (@{$user->{objects}}) {
+            my $new_object = addObject($object_data);;
+        }
+    }
+
+    my $postponed_count = scalar(keys(%$postponed));
+    print "Processing postponed objects\n" if ($options->{verbose} && $postponed_count);
+    while (scalar(keys(%$postponed))) {
+        foreach my $id (keys %$postponed) {
+            my $p = $postponed->{$id};
+            delete($postponed->{$id});
+            while (my $object_data = shift(@$p)) {
+                print "Adding postponed object '" . $object_data->{name} . "'\n" if ($options->{verbose});
+                my $new_object = addObject($object_data);
+            }
+        }
+        die "Unable to add any postponed objects\n" unless scalar(keys(%$postponed) < $postponed_count);
+        $postponed_count = scalar(keys(%$postponed));
     }
 }
 
+sub addObject {
+    my $object_data = shift || die "no object data";
+
+    print "Adding object '" . $object_data->{name} . "'\n" if ($options->{verbose});
+    my $object;
+    eval {
+        $object = new MinorImpact::Object($object_data);
+    };
+    if ($@ =~/invalid object '([^']+)'/) {
+        push(@{$postponed->{$1}}, $object_data);
+        print "Postponing '" . $object_data->{name} . "'\n" if ($options->{verbose});
+    } elsif ($@ && !$object) {
+        die "Failed to add " . $object_data->{name} . ":$@";
+    } elsif ($object) {
+        my $id = $object->get('uuid');
+        if ($postponed->{$id}) {
+            my $p = $postponed->{$id};
+            delete($postponed->{$id});
+            while (my $object_data = shift(@$p)) {
+                print "Adding postponed object '" . $object_data->{name} . "'\n" if ($options->{verbose});
+                my $new_object = addObject($object_data);
+            }
+        }
+    }
+    return $object;
+}
 

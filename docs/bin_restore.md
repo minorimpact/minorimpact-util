@@ -4,7 +4,7 @@ restore.pl - Restore a MinorImpact application.
 
 # SYNOPSIS
 
-restore.pl \[options\]
+restore.pl -i <file> \[options\]
 
 ## Options
 
@@ -31,12 +31,6 @@ restore.pl \[options\]
     Read data from FILE.
 
     Required.
-
-- -u, --username=USER
-
-    Connect as USER.  
-
-    Default: $ENV{USER}
 
 - -v, --verbose 
 
