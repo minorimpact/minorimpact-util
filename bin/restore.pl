@@ -139,7 +139,7 @@ sub main {
     MinorImpact::dbConfig();
 
     foreach my $type ( @{$data->{types}}) {
-        print "Adding typea '" . $type->{name} . "'\n" if ($options->{verbose});
+        print "Adding type '" . $type->{name} . "'\n" if ($options->{verbose});
         my $new_type = MinorImpact::Object::Type::add($type);
     }
 

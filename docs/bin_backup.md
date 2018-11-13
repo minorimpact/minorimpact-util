@@ -24,10 +24,6 @@ backup.pl \[options\]
 
     Write output to FILE rather than STDOUT.
 
-- -u, --username=USER
-
-    Connect as USER.  default: $ENV{USER}
-
 - -v, --verbose 
 
     Verbose output.

@@ -28,10 +28,6 @@ Usage information.
 
 Write output to FILE rather than STDOUT.
 
-=item -u, --username=USER
-
-Connect as USER.  default: $ENV{USER}
-
 =item -v, --verbose 
 
 Verbose output.
@@ -64,7 +60,6 @@ GetOptions(
     "debug|d",
     "help|?|h",
     "output_file|o=s",
-    "username|u=s",
     "verbose|v",
 ) || HelpMessage();
 
@@ -78,9 +73,8 @@ sub main {
 
     MinorImpact::debug($options->{debug});
     $MINORIMPACT = new MinorImpact({config_file=>$options->{config}});
-    if ($options->{username}) {
-        $ENV{USER} = $options->{username};
-    }
+
+    $ENV{USER} = 'admin';
     my $current_user = MinorImpact::user( { force => 1, admin =>1 });
 
     $data->{users} = [];
