@@ -145,11 +145,14 @@ sub main {
 
     foreach my $user ( @{$data->{users}}) {
         my $new_user;
-        if ($user->{name} eq 'admin') {
+        if ($user->{name} eq $current_user->name()) {
             $new_user = $current_user;
         } else {
             print "Adding user '" . $user->{name} . "'\n" if ($options->{verbose});
             $new_user = MinorImpact::User::add($user) || die "Couldn't add '$user->{name}'\n";
+        }
+        foreach my $object_data (@{$user->{externals}}) {
+            $new_user->external($object_data);
         }
         foreach my $object_data (@{$user->{objects}}) {
             my $new_object = addObject($object_data);;
