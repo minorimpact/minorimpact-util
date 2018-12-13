@@ -13,10 +13,6 @@ reset.pl [options]
 
 =over
 
-=item -a, --admin
-
-Reset the password for the 'admin' user to 'admin'.
-
 =item -c, --config=FILE
 
 Read connection information from FILE.
@@ -34,6 +30,10 @@ Do not prompt for confirmation before wiping out the existing database.
 =item -h, --help
 
 Usage information.
+
+=item -p, --password
+
+Reset the password for the 'admin' user to 'admin'.
 
 =item -v, --verbose 
 
@@ -56,8 +56,6 @@ use MinorImpact::User;
 
 my $MINORIMPACT;
 
-my $postponed = {};
-
 my $options = {
     help => sub { HelpMessage(); },
 };
@@ -65,11 +63,11 @@ my $options = {
 Getopt::Long::Configure("bundling");
 GetOptions( 
     $options, 
-    "admin|a", 
     "config|c=s", 
     "debug|d",
     "force|f",
     "help|?|h",
+    "password|p", 
     "verbose|v",
 ) || HelpMessage();
 
@@ -111,7 +109,7 @@ sub main {
         }
     }
 
-    if ($options->{admin}) {
+    if ($options->{password}) {
         my $DB = MinorImpact::db();
         my $admin_password = crypt("admin", $$);
         $DB->do("UPDATE user SET password = ? WHERE name=?", undef, ($admin_password, "admin")) || die $DB->errstr;
