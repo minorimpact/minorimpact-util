@@ -114,7 +114,7 @@ sub main {
     if ($options->{admin}) {
         my $DB = MinorImpact::db();
         my $admin_password = crypt("admin", $$);
-        $DB->do("UPDATE user SET password = ? WHERE name=?", undef, ($password, "admin")) || die $DB->errstr;
+        $DB->do("UPDATE user SET password = ? WHERE name=?", undef, ($admin_password, "admin")) || die $DB->errstr;
     }
 
 
