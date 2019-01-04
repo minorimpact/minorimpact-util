@@ -135,7 +135,9 @@ sub main {
         $type->delete();
     }
 
+    print "Clearing cache\n" if ($options->{verbose});
     MinorImpact::clearCache();
+    print "Re-running global configuration\n" if ($options->{verbose});
     MinorImpact::dbConfig();
 
     foreach my $type ( @{$data->{types}}) {
@@ -155,7 +157,7 @@ sub main {
             $new_user->external($object_data);
         }
         foreach my $object_data (@{$user->{objects}}) {
-            my $new_object = addObject($object_data);;
+            my $new_object = addObject($object_data);
         }
     }
 
